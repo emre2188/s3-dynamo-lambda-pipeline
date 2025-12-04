@@ -5,7 +5,7 @@ output "s3_bucket_name" {
 
 output "dynamodb_table_name" {
   description = "The name of DynamoDB table created"
-  value       = aws_dynamodb_table.ingestion_table.name
+  value       = aws_dynamodb_table.chronic_disease.name
 }
 
 output "lambda_role_arn" {
