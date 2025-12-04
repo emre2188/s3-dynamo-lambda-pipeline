@@ -164,7 +164,12 @@ resource "aws_lambda_function" "s3_ingestion_lambda" {
       TABLE_NAME = aws_dynamodb_table.chronic_disease.name
     }
   }
+
+  timeout     = 300  # seconds, enough for large files
+  memory_size = 1024 # MB, more memory for faster processing
 }
+
+
 
 # -----------------------------
 # Allow S3 to invoke Lambda
