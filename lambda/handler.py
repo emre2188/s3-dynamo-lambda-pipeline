@@ -2,7 +2,6 @@ import boto3
 import csv
 import json
 import os
-import uuid
 
 dynamodb = boto3.resource("dynamodb")
 s3 = boto3.client("s3")
@@ -31,13 +30,9 @@ def lambda_handler(event, context):
 
     # Insert items into DynamoDB
     for item in items:
-        # Ensure composite keys exist
+        # Ensure partition key exists
         if "LocationAbbr" not in item:
             raise ValueError("Missing required field: LocationAbbr")
-
-        if "SortKey" not in item:
-            # Generate SortKey if missing
-            item["SortKey"] = str(uuid.uuid4())
 
         table.put_item(Item=item)
 

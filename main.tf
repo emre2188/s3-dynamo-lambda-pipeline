@@ -32,7 +32,6 @@ resource "random_string" "suffix" {
 # -----------------------------
 resource "aws_s3_bucket" "ingestion_bucket" {
   bucket = "${var.bucket_prefix}-${random_string.suffix.result}"
-
   force_destroy = false
 }
 
@@ -51,18 +50,13 @@ resource "aws_dynamodb_table" "chronic_disease" {
   name         = "chronic-disease-table"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LocationAbbr"
-  range_key    = "SortKey"
 
   attribute {
     name = "LocationAbbr"
     type = "S"
   }
-
-  attribute {
-    name = "SortKey"
-    type = "S"
-  }
 }
+
 
 # -----------------------------
 # IAM Role for Lambda
@@ -84,7 +78,7 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-# Policies: DynamoDB write
+# DynamoDB write policy
 resource "aws_iam_policy" "dynamodb_write_policy" {
   name = "lambda_dynamodb_write_policy"
 
@@ -103,7 +97,7 @@ resource "aws_iam_policy" "dynamodb_write_policy" {
   })
 }
 
-# Policies: S3 read
+# S3 read + list policy
 resource "aws_iam_policy" "s3_read_policy" {
   name = "lambda_s3_read_policy"
 
@@ -116,12 +110,19 @@ resource "aws_iam_policy" "s3_read_policy" {
           "s3:GetObject"
         ]
         Resource = "${aws_s3_bucket.ingestion_bucket.arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = aws_s3_bucket.ingestion_bucket.arn
       }
     ]
   })
 }
 
-# Attach policies
+# Attach policies to role
 resource "aws_iam_role_policy_attachment" "attach_dynamodb_policy" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.dynamodb_write_policy.arn
