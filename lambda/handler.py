@@ -2,6 +2,7 @@ import boto3
 import csv
 import json
 import os
+import uuid
 
 dynamodb = boto3.resource("dynamodb")
 s3 = boto3.client("s3")
@@ -30,9 +31,14 @@ def lambda_handler(event, context):
 
     # Insert items into DynamoDB
     for item in items:
+
         # Ensure partition key exists
-        if "LocationAbbr" not in item:
+        if "LocationAbbr" not in item or not item["LocationAbbr"].strip():
             raise ValueError("Missing required field: LocationAbbr")
+
+        # Ensure SortKey exists and is not empty
+        if "SortKey" not in item or not item["SortKey"].strip():
+            item["SortKey"] = str(uuid.uuid4())  # auto-generate unique SortKey
 
         table.put_item(Item=item)
 
@@ -44,5 +50,8 @@ def parse_csv(data):
     items = []
 
     for row in reader:
-        items.append({k: v for k, v in row.items()})
+        # Convert all values to strings and handle empty values
+        clean_row = {k: (v if v is not None else "") for k, v in row.items()}
+        items.append(clean_row)
+
     return items

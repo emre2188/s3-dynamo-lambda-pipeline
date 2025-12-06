@@ -49,10 +49,18 @@ resource "aws_s3_bucket_versioning" "versioning" {
 resource "aws_dynamodb_table" "chronic_disease" {
   name         = "chronic-disease-table"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LocationAbbr"
+
+  # Composite key
+  hash_key  = "LocationAbbr"
+  range_key = "SortKey"
 
   attribute {
     name = "LocationAbbr"
+    type = "S"
+  }
+
+  attribute {
+    name = "SortKey"
     type = "S"
   }
 }
